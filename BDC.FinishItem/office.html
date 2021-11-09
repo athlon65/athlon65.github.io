@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html  style="height:100%">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body style="height:100%">
+    <iframe src="" id="officeViewIframe" style="height:100%;width:100%"></iframe>
+</body>
+</html>
+<script src="/extends/js/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var request = GetRequest();
+        var id = request["id"];
+        if (id) {          
+            GetFileUrl(id).then(function (url) {               
+                $("#officeViewIframe").attr("src", url);
+            });
+        }
+    });
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for (var i = 0; i < strs.length; i++) {
+                theRequest[strs[i].split("=")[0]] = decodeURI(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+
+    function GetFileUrl(id) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+
+                url: "http://gsapi.brc-beei.com:9966/webservice/OfficeView.asmx/GetFileURL",
+                dataType: 'XML',
+                data: { pkid: id },
+                type: "POST",
+                async: false,
+                success: function (data) {
+                    if (data && data.scrollingElement) {
+                        var json = JSON.parse(data.scrollingElement.innerHTML);
+                        resolve(json.Message);
+                    }
+                    else {
+                        reject();
+                    }
+                },
+                error: function (e) {
+                    reject();
+                }
+            });
+        });
+    }
+
+</script>
